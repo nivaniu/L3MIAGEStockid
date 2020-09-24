@@ -4,6 +4,7 @@ import com.stockid.os.OSValidator;
 import com.stockid.tools.FileTools;
 import com.stockid.tools.ScannerTools;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -50,6 +51,8 @@ public class Main {
         }
         choices.put(exitCode++, "Display Files"+done);
         actions.put(exitCode - 1, __ -> displayFiles(rootDirectory + currentDirectory));
+        choices.put(exitCode++, "Open File"+todo);
+        actions.put(exitCode - 1, __ -> openFile());
         choices.put(exitCode++, "Enter directory"+done);
         actions.put(exitCode - 1, __ -> enterDirectory());
         choices.put(exitCode++, "Parent directory"+done);
@@ -69,6 +72,33 @@ public class Main {
         choices.put(exitCode++, "Enter a key"+todo);
         choices.put(exitCode, "Exit");
         return true;
+    }
+
+    private static void openFile() {
+        if(!Desktop.isDesktopSupported())
+        {
+            println("Error: Desktop is not supported");
+            return;
+        }
+        displayFiles(rootDirectory+currentDirectory);
+        println("Enter file name:");
+        String fileName = scanner.next();
+        File file = new File(rootDirectory+currentDirectory+fileName);
+        if (!file.exists())
+        {
+            println("Error: File " + file.getName()+ " does not exist");
+            return;
+        }
+        if (file.isDirectory())
+        {
+            println("Error: File " + file.getName()+ " is a directory");
+            return;
+        }
+        try {
+            Desktop.getDesktop().open(file);
+        } catch (IOException e) {
+            println("Error: Unable open " + file.getName());
+        }
     }
 
     private static void renameFile() {
