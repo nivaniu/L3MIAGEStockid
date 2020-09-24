@@ -6,9 +6,9 @@ import com.sun.tools.javac.util.List;
 import java.io.File;
 import java.util.ArrayList;
 
-public class Share {
+class Share {
     private static ArrayList<String> medias = new ArrayList<>(List.of("Facebook","Instaram", "Mail","Gmail", "SMS", "Go back"));
-    public static void document(String path)
+    static void document(String path)
     {
         int choise = -1;
         File file = new File(path);

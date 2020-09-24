@@ -2,20 +2,24 @@ package com.stockid;
 
 import com.stockid.os.OSValidator;
 import com.stockid.tools.FileTools;
+import com.stockid.tools.ScannerTools;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.*;
 import java.util.*;
 import java.util.function.Consumer;
 
 public class Main {
 
-    public static Scanner scanner = new Scanner(System.in);
+    static Scanner scanner = new Scanner(System.in);
 
-    public static String directorySeparator;
+    static String directorySeparator;
     private static String currentDirectory;
     private static String rootDirectory;
     private static final String defPhotoExtension = ".jpg";
+    private static final String done = "\tv";
+    private static final String todo = "\to";
     private static int exitCode = 0;
 
     private static HashMap<Integer, String> choices;
@@ -44,24 +48,79 @@ public class Main {
         } else {
             System.out.println("Root directory already exist");
         }
-        choices.put(exitCode++, "Display Files");
+        choices.put(exitCode++, "Display Files"+done);
         actions.put(exitCode - 1, __ -> displayFiles(rootDirectory + currentDirectory));
-        choices.put(exitCode++, "Enter directory");
+        choices.put(exitCode++, "Enter directory"+done);
         actions.put(exitCode - 1, __ -> enterDirectory());
-        choices.put(exitCode++, "Parent directory");
+        choices.put(exitCode++, "Parent directory"+done);
         actions.put(exitCode - 1, __ -> parentDirectory());
-        choices.put(exitCode++, "Take a picture");
+        choices.put(exitCode++, "Take a picture"+done);
         actions.put(exitCode - 1, __ -> createFile());
-        choices.put(exitCode++, "Create Folder");
+        choices.put(exitCode++, "Create Folder"+done);
         actions.put(exitCode - 1, __ -> createFolder());
-        choices.put(exitCode++, "Delete");
+        choices.put(exitCode++, "Delete"+done);
         actions.put(exitCode - 1, __ -> deleteFile());
-        choices.put(exitCode++, "Share File");
+        choices.put(exitCode++, "Share File"+done);
         actions.put(exitCode - 1, __ -> shareFile());
-        choices.put(exitCode++, "Upload Document");
-        choices.put(exitCode++, "Enter a key");
+        choices.put(exitCode++, "Rename File"+done);
+        actions.put(exitCode - 1, __ -> renameFile());
+        choices.put(exitCode++, "Upload Document"+done);
+        actions.put(exitCode - 1, __ -> uploadDocument());
+        choices.put(exitCode++, "Enter a key"+todo);
         choices.put(exitCode, "Exit");
         return true;
+    }
+
+    private static void renameFile() {
+    println("Enter file name:");
+    File file = new File(rootDirectory+currentDirectory+scanner.next());
+    if(!file.exists())
+    {
+        println("Error: File " + file.getName()+ " does not exist");
+        return;
+    }
+    println("Enter new file name:");
+    String fileName = scanner.next();
+    while (new File(rootDirectory+currentDirectory+fileName).exists()){
+        println("Error, "+fileName+" already exist, choose another name");
+        fileName = scanner.next();
+    }
+        if(!file.renameTo(new File(rootDirectory+currentDirectory+fileName)))
+            println("Error, renaming "+file.getName()+" to "+fileName);
+    }
+
+    private static void uploadDocument() {
+        System.out.print("Enter file path :");
+        String filePath = scanner.next();
+        File file = new File(filePath);
+        if (!file.exists()){
+            println("Error: File " + file.getName()+ " does not exist");
+            return;
+        }
+        if (file.isDirectory()){
+            println("Error: File " + file.getName()+ " is a directory");
+            return;
+        }
+        String fileName = file.getName();
+        try {
+            while (new File(rootDirectory + currentDirectory + directorySeparator+fileName).exists()){
+                println("File "+fileName+" already exists\n"
+                        + "Would you like to :\n"
+                        + "1) Rename it\n"
+                        + "2) Replace it\n"
+                        + "3) Abandon");
+                int choise = ScannerTools.requestInt(scanner);
+                if (choise==3)
+                    return;
+                if (choise==1) {
+                    println("Enter a new name:");
+                    fileName = scanner.next();
+                }
+            }
+            Files.copy(Paths.get(file.getPath()), Paths.get(rootDirectory + currentDirectory + directorySeparator+fileName), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            println("Error: Unable to upload " + file.getName());
+        }
     }
 
     private static void deleteFile() {
@@ -196,21 +255,22 @@ public class Main {
             return;
         }
         System.out.println("\nPath: " + currentDirectory + "\nFile list:\n".replace(directorySeparator, "/"));
-        String[] files = file.list();
-        for (String f : Objects.requireNonNull(files)) {
-            f = "\t" + f;
-            if (!f.contains(".")) {
-                f = "d" + f;
-            } else {
-                f = "f" + f;
-            }
-            System.out.println(f);
+        File[] files = file.listFiles();
+        for (File f : Objects.requireNonNull(files)) {
+            String fName = "\t" + f.getName();
+            if (f.isDirectory()) {
+                fName = "d" + fName;
+            } else if (f.isFile() && f.getName().contains(".")){
+                fName = "f" + fName;
+            } else
+                fName = "?" + fName;
+            System.out.println(fName);
         }
         System.out.println();
     }
 
     private static void createFolder() {
-        System.out.println("Enter the name of the desired a directory: ");
+        System.out.println("Enter the name of the desired directory: ");
         String path = rootDirectory + currentDirectory + scanner.next();
         File file = new File(path);
         boolean bool = file.mkdir();
