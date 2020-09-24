@@ -53,8 +53,15 @@ public class Main {
         choices.put(exitCode++, "Enter a key");
         choices.put(exitCode++, "Enter directory");
         actions.put(exitCode - 1, __ -> enterDirectory());
+        choices.put(exitCode++, "Parent directory");
+        actions.put(exitCode - 1, __ -> parentDirectory());
         choices.put(exitCode, "Exit");
         return true;
+    }
+
+    private static void parentDirectory() {
+        currentDirectory = FileTools.removeLastDirectory(currentDirectory, directorySeparator);
+        displayFiles(rootDirectory+currentDirectory);
     }
 
     public static void main(String[] args) {
@@ -77,13 +84,19 @@ public class Main {
     }
 
     private static int displayMenu() {
-        int choise;
+        int choise = 0;
         do {
             System.out.println("List of available actions :");
             for (Integer key : choices.keySet()) {
                 System.out.println(key + ") " + choices.get(key));
             }
-            choise = scanner.nextInt();
+            try {
+                choise = Integer.parseInt(scanner.next());
+            }catch (Exception e)
+            {
+                System.out.println("Error: Integer expected.\n");
+            }
+
         } while (choise > exitCode);
         return choise;
     }
