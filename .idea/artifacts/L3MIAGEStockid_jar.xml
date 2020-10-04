@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="L3MIAGEStockid:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/L3MIAGEStockid_jar</output-path>
+    <root id="archive" name="L3MIAGEStockid.jar">
+      <element id="module-output" name="L3MIAGEStockid" />
+    </root>
+  </artifact>
+</component>
